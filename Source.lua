@@ -160,7 +160,7 @@ end
 local function GoTo(CFrame, Move)
   local Char = Player.Character
   if IsAlive(Char) then
-    return Move and Char:MoveTo(CFrame.p) or Char:SetPrimaryPartCFrame(CFrame)
+    return Move and ( Char:MoveTo(CFrame.p) or true ) or Char:SetPrimaryPartCFrame(CFrame)
   end
 end
 
@@ -324,7 +324,8 @@ Window:AddMinimizeButton({
 local Tabs = {
   Discord = Window:MakeTab({"Discord", "Info"}),
   MainFarm = Window:MakeTab({"Farm", "Home"}),
-  Items = Window:MakeTab({"Items", "Swords"})
+  Items = Window:MakeTab({"Items", "Swords"}),
+  Teleport = Window:MakeTab({"Teleport", "Locate"})
 }
 
 Window:SelectTab(Tabs.MainFarm)
@@ -388,7 +389,7 @@ local _Items = Tabs.Items do
     end
   end, "AutoStore"})
   _Items:AddSection("Aura Color")
-  _Items:AddButton({"Random Aura Color [ 10 Gems ]", function()
+  _Items:AddButton({"Reroll Aura Color [ 10 Gems ]", function()
     ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Reroll_Color", "Halfed Sorcerer")
   end})
   _Items:AddSection("Weapons")
@@ -401,4 +402,14 @@ local _Items = Tabs.Items do
       fireclickdetector(workspace.Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector)
     end
   end, "AutoPopcat"})]]
+end
+
+local _Teleport = Tabs.Teleport do
+  _Teleport:AddSection("Teleport")
+  _Teleport:AddDropdown({"Islands", Location:WaitForChild("SpawnLocations"):GetChildren(), {}, function(Value)
+    GoTo(Location.SpawnLocations[Value].CFrame)
+  end})
+  _Teleport:AddDropdown({"Islands", Location:WaitForChild("QuestLocaion"):GetChildren(), {}, function(Value)
+    GoTo(Location.QuestLocaion[Value].CFrame)
+  end})
 end
