@@ -307,7 +307,7 @@ if not _env.LoadedFarm then
   task.spawn(function()
     while _wait() do
       for _,f in _env.FarmFuncs do
-        if _env[f[1]] then local s,r=(f[2])()if s and r then break end;end
+        if _env[f[1]] then local s,r=pcall(f[2])if s and r then break end;end
       end
     end
   end)
