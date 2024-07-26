@@ -27,6 +27,7 @@ local QuestLocation = Location:WaitForChild("QuestLocaion")
 local Items = Player:WaitForChild("Items")
 local QuestFolder = Player:WaitForChild("QuestFolder")
 local Backpack = Player:WaitForChild("Backpack")
+local Ability = Player:WaitForChild("Ability")
 local PlayerData = Player:WaitForChild("PlayerData")
 local PlayerLevel = PlayerData:WaitForChild("Level")
 
@@ -93,6 +94,10 @@ local Loaded, Funcs, Folders = {}, {}, {} do
     return ItemStorage:FindFirstChild(MName) and ItemStorage[MName].Value or 0
   end
   
+  Funcs.GetAbilityLvl = function(self, Ablt)
+    return Ability:FindFirstChild(Ablt) and Ability[Ablt].Value or 0
+  end
+  
   local _Quests = require(QuestSettings)
   for Npc,Quest in pairs(_Quests) do
     if not Quest.Special_Quest and QuestLocation:FindFirstChild(Npc) then
@@ -126,14 +131,14 @@ end
 local function PlayerClick()
   local Char = Player.Character
   if Char then
-    if Settings.AutoHaki and Char:FindFirstChild("AuraColor_Folder") then
-      if #Char.AuraColor_Folder:GetChildren() < 1 then
-        ReplicatedStorage.OtherEvent.MainEvents.Ability:InvokeServer("Aura")
-      end
-    end
     if Settings.AutoClick then
       VirtualUser:CaptureController()
       VirtualUser:Button1Down(Vector2.new(1e4, 1e4))
+    end
+    if Settings.AutoHaki and Char:FindFirstChild("AuraColor_Folder") and Funcs:GetAbilityLvl("Aura") > 0 then
+      if #Char.AuraColor_Folder:GetChildren() < 1 then
+        ReplicatedStorage.OtherEvent.MainEvents.Ability:InvokeServer("Aura")
+      end
     end
   end
 end
@@ -298,7 +303,7 @@ _env.FarmFuncs = {
   {"Nearest Farm", (function() return KillMonster(GetNextEnemie()) end) }
 }
 
-if not _env.LoadedFarm then
+if _env.LoadedFarm then
   _env.LoadedFarm = true
   task.spawn(function()
     while _wait() do
