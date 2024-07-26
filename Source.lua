@@ -303,7 +303,7 @@ _env.FarmFuncs = {
   {"Nearest Farm", (function() return KillMonster(GetNextEnemie()) end) }
 }
 
-if _env.LoadedFarm then
+if not _env.LoadedFarm then
   _env.LoadedFarm = true
   task.spawn(function()
     while _wait() do
