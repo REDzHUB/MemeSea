@@ -157,10 +157,10 @@ local function GetNextEnemie(EnemieName)
   return false
 end
 
-local function GoTo(CFrame)
+local function GoTo(CFrame, Move)
   local Char = Player.Character
   if IsAlive(Char) then
-    Char:SetPrimaryPartCFrame(CFrame)
+    return Move and Char:MoveTo(CFrame.p) or Char:SetPrimaryPartCFrame(CFrame)
   end
 end
 
@@ -205,7 +205,7 @@ end
 local function TakeQuest(QuestName, CFrame)
   local QuestGiver = Quests_Npc:FindFirstChild(QuestName)
   if QuestGiver and Player:DistanceFromCharacter(QuestGiver.WorldPivot.p) < 5 then
-    return fireproximityprompt(QuestGiver.Block.QuestPrompt), _wait(0.2)
+    return fireproximityprompt(QuestGiver.Block.QuestPrompt), _wait(0.1)
   end
   GoTo(CFrame or QuestLocation[QuestName].CFrame)
 end
@@ -287,7 +287,7 @@ _env.FarmFuncs = {
         end
       else
         local Raid = Region:FindFirstChild("RaidArea")
-        if Raid then GoTo(Raid.CFrame) end
+        if Raid then GoTo(Raid.CFrame, true) end
       end
       return true
     end
@@ -366,6 +366,13 @@ end
 
 local _Items = Tabs.Items do
   _Items:AddSection("Powers")
+  _Items:AddButton({"Reroll Powers 10X [ 250k Money ]", function()
+    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Random_Power", {
+      Type = "Decuple",
+      NPCName = "Floppa Gacha",
+      GachaType = "Money"
+    })
+  end})
   _Items:AddToggle({"Auto Store Powers", false, function(Value)
     _env.AutoStorePowers = Value
     while _env.AutoStorePowers do _wait()
@@ -380,6 +387,10 @@ local _Items = Tabs.Items do
       end
     end
   end, "AutoStore"})
+  _Items:AddSection("Aura Color")
+  _Items:AddButton({"Random Aura Color [ 10 Gems ]", function()
+    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Reroll_Color", "Halfed Sorcerer")
+  end})
   _Items:AddSection("Weapons")
   AddToggle(_Items, {"Auto Floppa [ Exclusive Sword ]"}, "_Floppa Sword")
   
