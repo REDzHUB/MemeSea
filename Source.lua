@@ -375,7 +375,8 @@ local Tabs = {
   MainFarm = Window:MakeTab({"Farm", "Home"}),
   Items = Window:MakeTab({"Items", "Swords"}),
   Stats = Window:MakeTab({"Stats", "Signal"}),
-  Teleport = Window:MakeTab({"Teleport", "Locate"})
+  Teleport = Window:MakeTab({"Teleport", "Locate"}),
+  Misc = Window:MakeTab({"Misc", "Settings"})
 }
 
 Window:SelectTab(Tabs.MainFarm)
@@ -496,5 +497,24 @@ local _Teleport = Tabs.Teleport do
   end})
   _Teleport:AddDropdown({"Islands", Location:WaitForChild("QuestLocaion"):GetChildren(), {}, function(Value)
     GoTo(Location.QuestLocaion[Value].CFrame)
+  end})
+end
+
+local _Misc = Tabs.Misc do
+  _Misc:AddButton({"Redeem All Codes", Funcs.RAllCodes})
+  _Misc:AddSection("Settings")
+  _Misc:AddSlider({"Farm Distance", 5, 15, 1, 8, function(Value)
+    Settings.FarmDistance = Value or 8
+    Settings.FarmCFrame = CFrame_new(0, Value or 8, 0) * CFrame_Angles(math.rad(-90), 0, 0)
+  end, "Farm Distance"})
+  _Misc:AddToggle({"Auto Aura", true, function(Value) Settings.AutoHaki = Value end, "Auto Haki"})
+  _Misc:AddToggle({"Auto Attack", true, function(Value) Settings.AutoClick = Value end, "Auto Attack"})
+  _Misc:AddToggle({"Bring Mobs", true, function(Value) Settings.BringMobs = Value end, "Bring Mobs"})
+  _Misc:AddSection("Team")
+  _Misc:AddButton({"Join Cheems Team", function()
+    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Cheems Recruiter")
+  end})
+  _Misc:AddButton({"Join Floppa Team", function()
+    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Floppa Recruiter")
   end})
 end
