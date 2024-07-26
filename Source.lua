@@ -38,7 +38,7 @@ local CFrame_new = CFrame.new
 local _huge = math.huge
 
 local Loaded, Funcs, Folders = {}, {}, {} do
-  Loaded.WeaponsList = { "Style", "Power", "Weapon" }
+  Loaded.WeaponsList = { "Fight", "Power", "Weapon" }
   Loaded.EnemeiesList = {}
   Loaded.EnemiesSpawns = {}
   Loaded.EnemiesQuests = {}
@@ -123,7 +123,7 @@ local Settings = Settings or {} do
   Settings.AntiAFK = true
   Settings.AutoHaki = true
   Settings.AutoClick = true
-  Settings.ToolFarm = "Weapon" -- [[ "Style", "Power", "Weapon" ]]
+  Settings.ToolFarm = "Fight" -- [[ "Fight", "Power", "Weapon" ]]
   Settings.FarmCFrame = CFrame_new(0, Settings.FarmDistance, 0) * CFrame_Angles(math.rad(-90), 0, 0)
 end
 
@@ -346,8 +346,8 @@ local _Discord = Tabs.Discord do
 end
 
 local _MainFarm = Tabs.MainFarm do
-  _MainFarm:AddDropdown({"Farm Tool", Loaded.WeaponsList, { "Fighting Style" }, function(Value)
-    Settings.ToolFarm = Value == "Fighting Style" and "Style" or Value
+  _MainFarm:AddDropdown({"Farm Tool", Loaded.WeaponsList, Settings.ToolFarm, function(Value)
+    Settings.ToolFarm = Value
   end, "Main/FarmTool"})
   _MainFarm:AddSection("Farm")
   AddToggle(_MainFarm, {"Auto Farm Level"}, "Level Farm")
