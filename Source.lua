@@ -38,7 +38,7 @@ local CFrame_new = CFrame.new
 local _huge = math.huge
 
 local Loaded, Funcs, Folders = {}, {}, {} do
-  Loaded.WeaponsList = { "Fightning Style", "Power", "Weapon" }
+  Loaded.WeaponsList = { "Style", "Power", "Weapon" }
   Loaded.EnemeiesList = {}
   Loaded.EnemiesSpawns = {}
   Loaded.EnemiesQuests = {}
@@ -123,7 +123,7 @@ local Settings = Settings or {} do
   Settings.AntiAFK = true
   Settings.AutoHaki = true
   Settings.AutoClick = true
-  Settings.ToolFarm = "Weapon" -- [[ "Fightning Style", "Power", "Weapon" ]]
+  Settings.ToolFarm = "Weapon" -- [[ "Style", "Power", "Weapon" ]]
   Settings.FarmCFrame = CFrame_new(0, Settings.FarmDistance, 0) * CFrame_Angles(math.rad(-90), 0, 0)
 end
 
@@ -167,7 +167,7 @@ local function EquipWeapon()
   local Backpack, Char = Player:FindFirstChild("Backpack"), Player.Character
   if IsAlive(Char) and Backpack then
     for _,v in ipairs(Backpack:GetChildren()) do
-      if v:IsA("Tool") and v.ToolTip == Settings.ToolFarm then
+      if v:IsA("Tool") and v.ToolTip:find(Settings.ToolFarm) then
         Char.Humanoid:EquipTool(v)
       end
     end
@@ -346,8 +346,8 @@ local _Discord = Tabs.Discord do
 end
 
 local _MainFarm = Tabs.MainFarm do
-  _MainFarm:AddDropdown({"Farm Tool", Loaded.WeaponsList, { "Fightning Style" }, function(Value)
-    Settings.ToolFarm = Value
+  _MainFarm:AddDropdown({"Farm Tool", Loaded.WeaponsList, { "Fighting Style" }, function(Value)
+    Settings.ToolFarm = Value == "Fighting Style" and "Style" or Value
   end, "Main/FarmTool"})
   _MainFarm:AddSection("Farm")
   AddToggle(_MainFarm, {"Auto Farm Level"}, "Level Farm")
