@@ -295,7 +295,7 @@ _env.FarmFuncs = {
   {"FS Enemie", (function()
     local Enemy = _env.SelecetedEnemie
     local Quest = Loaded.EnemiesQuests[Enemy]
-    if VerifyQuest(Quest) then
+    if VerifyQuest(Quest) or not _env["FS Take Quest"] then
       if KillMonster(Enemy) then else GoTo(EnemyLocation[Enemy].CFrame) end
     else ClearQuests(Quest)TakeQuest(Quest) end
     return true
@@ -325,6 +325,7 @@ local Tabs = {
   Discord = Window:MakeTab({"Discord", "Info"}),
   MainFarm = Window:MakeTab({"Farm", "Home"}),
   Items = Window:MakeTab({"Items", "Swords"}),
+  Stats = Window:MakeTab({"Stats", "Signal"}),
   Teleport = Window:MakeTab({"Teleport", "Locate"})
 }
 
@@ -359,6 +360,7 @@ local _MainFarm = Tabs.MainFarm do
     _env.SelecetedEnemie = Value
   end, "Main/SEnemy"})
   AddToggle(_MainFarm, {"Auto Farm Selected"}, "FS Enemie")
+  AddToggle(_MainFarm, {"Take Quest [ Enemie Selected ]", true}, "FS Take Quest")
   _MainFarm:AddSection("Boss Farm")
   AddToggle(_MainFarm, {"Auto Meme Beast"}, "Meme Beast")
   _MainFarm:AddSection("Raid")
@@ -402,6 +404,36 @@ local _Items = Tabs.Items do
       fireclickdetector(workspace.Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector)
     end
   end, "AutoPopcat"})]]
+end
+
+local _Stats = Tabs.Stats do
+  local StatsName, SelectedStats = {
+    ["Power"] = "MemePowerLevel", ["Health"] = "DefenseLevel",
+    ["Weapon"] = "SwordLevel", ["Melee"] = "Melee Level"
+  }, {}
+  
+  _Stats:AddToggle({"Auto Stats", false, function(Value)
+    _env.AutoStats = Value
+    local SkillPoint = PlayerData.SkillPoint
+    while _env.AutoStats do _wait(0.5)
+      for _,v in pairs(SelectedStats) do
+        local Points = SkillPoint.Value
+        if v and Points > 0 then
+          ReplicatedStorage.OtherEvent.MainEvents.StatsFunction:InvokeServer({
+            ["Target"] = StatsName[_],
+            ["Action"] = "UpgradeStats",
+            ["Amount"] = math.clamp(((Points<10 and 1) or (Points<100 and 5) or (Points<1000 and 20) or 50), 0, Points)
+          })
+        end
+      end
+    end
+  end})
+  _Stats:AddSection("Select Stats")
+  for _,v in next, StatsName do
+    _Stats:AddToggle({_, false, function(Value)
+      SelectedStats[_] = Value
+    end, "Stats_" .. _})
+  end
 end
 
 local _Teleport = Tabs.Teleport do
