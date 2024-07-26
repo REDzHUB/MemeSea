@@ -26,7 +26,6 @@ local QuestLocation = Location:WaitForChild("QuestLocaion")
 
 local Items = Player:WaitForChild("Items")
 local QuestFolder = Player:WaitForChild("QuestFolder")
-local Backpack = Player:WaitForChild("Backpack")
 local Ability = Player:WaitForChild("Ability")
 local PlayerData = Player:WaitForChild("PlayerData")
 local PlayerLevel = PlayerData:WaitForChild("Level")
@@ -165,8 +164,8 @@ local function GoTo(CFrame)
 end
 
 local function EquipWeapon()
-  local Char = Player.Character
-  if IsAlive(Char) then
+  local Backpack, Char = Player:FindFirstChild("Backpack"), Player.Character
+  if IsAlive(Char) and Backpack then
     for _,v in ipairs(Backpack:GetChildren()) do
       if v:IsA("Tool") and v.ToolTip == Settings.ToolFarm then
         Char.Humanoid:EquipTool(v)
@@ -308,7 +307,7 @@ if not _env.LoadedFarm then
   task.spawn(function()
     while _wait() do
       for _,f in _env.FarmFuncs do
-        if _env[f[1]] then local s,r=pcall(f[2])if s and r then break end;end
+        if _env[f[1]] then local s,r=(f[2])()if s and r then break end;end
       end
     end
   end)
@@ -369,10 +368,13 @@ local _Items = Tabs.Items do
   _Items:AddToggle({"Auto Store Powers", false, function(Value)
     _env.AutoStorePowers = Value
     while _env.AutoStorePowers do _wait()
-      for _,v in ipairs(Backpack:GetChildren()) do
-        if v:IsA("Tool") and v.ToolTip == "Power" and v:GetAttribute("Using") == nil then
-          v.Parent = Player.Character
-          ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", { Action = "Store", Tool = v })
+      local Backpack = Player:FindFirstChild("Backpack")
+      if Backpack then
+        for _,v in ipairs(Backpack:GetChildren()) do
+          if v:IsA("Tool") and v.ToolTip == "Power" and v:GetAttribute("Using") == nil then
+            v.Parent = Player.Character
+            ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", { Action = "Store", Tool = v })
+          end
         end
       end
     end
