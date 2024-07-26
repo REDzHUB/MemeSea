@@ -64,7 +64,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
   
   Funcs.GetCurrentQuest = function(self)
     for _,Quest in pairs(Loaded.Quests) do
-      if Quest.Level <= self:GetPlayerLevel() then
+      if Quest.Level <= self:GetPlayerLevel() and not Quest.RaidBoss then
         return Quest
       end
     end
@@ -101,6 +101,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
   for Npc,Quest in pairs(_Quests) do
     if not Quest.Special_Quest and QuestLocation:FindFirstChild(Npc) then
       table.insert(Loaded.Quests, {
+        RaidBoss = Quest.Raid_Boss,
         NpcName = Npc,
         QuestPos = QuestLocation[Npc].CFrame,
         EnemyPos = EnemyLocation[Quest.Target].CFrame,
