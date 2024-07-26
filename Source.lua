@@ -34,6 +34,7 @@ local sethiddenproperty = sethiddenproperty or (function()end)
 
 local CFrame_Angles = CFrame.Angles
 local CFrame_new = CFrame.new
+local Vector3_new = Vector3.new
 
 local _huge = math.huge
 
@@ -202,10 +203,10 @@ local function KillMonster(_Enemie, SBring)
   end
 end
 
-local function TakeQuest(QuestName, CFrame)
+local function TakeQuest(QuestName, CFrame, Wait)
   local QuestGiver = Quests_Npc:FindFirstChild(QuestName)
   if QuestGiver and Player:DistanceFromCharacter(QuestGiver.WorldPivot.p) < 5 then
-    return fireproximityprompt(QuestGiver.Block.QuestPrompt), _wait(0.1)
+    return fireproximityprompt(QuestGiver.Block.QuestPrompt), _wait(Wait or 0.1)
   end
   GoTo(CFrame or QuestLocation[QuestName].CFrame)
 end
@@ -256,6 +257,54 @@ _env.FarmFuncs = {
     local MemeBeast = Monsters:FindFirstChild("Meme Beast") or rs_Monsters:FindFirstChild("Meme Beast")
     if MemeBeast then
       GoTo(MemeBeast.WorldPivot)EquipWeapon()PlayerClick()
+      return true
+    end
+  end)},
+  {"Lord Sus", (function()
+    local LordSus = Monsters:FindFirstChild("Lord Sus") or rs_Monsters:FindFirstChild("Lord Sus")
+    if LordSus then
+      if not VerifyQuest("Floppa Quest 32") and Funcs:GetPlayerLevel() >= 1550 then
+        ClearQuests("Floppa Quest 32")TakeQuest("Floppa Quest 32", nil, 1)
+      else
+        KillMonster(LordSus)
+      end
+      return true
+    elseif Funcs:GetMaterial("Sussy Orb") > 0 then
+      if Player:DistanceFromCharacter(Vector3_new(6644, -95, 4811)) < 5 then
+        fireproximityprompt(Island.ForgottenIsland.Summon3.Summon.SummonPrompt)
+      else GoTo(CFrame_new(6644, -95, 4811)) end
+      return true
+    end
+  end)},
+  {"Evil Noob", (function()
+    local EvilNoob = Monsters:FindFirstChild("Evil Noob") or rs_Monsters:FindFirstChild("Evil Noob")
+    if EvilNoob then
+      if not VerifyQuest("Floppa Quest 29") and Funcs:GetPlayerLevel() >= 1400 then
+        ClearQuests("Floppa Quest 29")TakeQuest("Floppa Quest 29", nil, 1)
+      else
+        KillMonster(EvilNoob)
+      end
+      return true
+    elseif Funcs:GetMaterial("Noob Head") > 0 then
+      if Player:DistanceFromCharacter(Vector3_new(-2356, -81, 3180)) < 5 then
+        fireproximityprompt(Island.MoaiIsland.Summon2.Summon.SummonPrompt)
+      else GoTo(CFrame_new(-2356, -81, 3180)) end
+      return true
+    end
+  end)},
+  {"Giant Pumpkin", (function()
+    local Pumpkin = Monsters:FindFirstChild("Giant Pumpkin") or rs_Monsters:FindFirstChild("Giant Pumpkin")
+    if Pumpkin then
+      if not VerifyQuest("Floppa Quest 23") and Funcs:GetPlayerLevel() >= 1100 then
+        ClearQuests("Floppa Quest 23")TakeQuest("Floppa Quest 23", nil, 1)
+      else
+        KillMonster(Pumpkin)
+      end
+      return true
+    elseif Funcs:GetMaterial("Flame Orb") > 0 then
+      if Player:DistanceFromCharacter(Vector3_new(-1180, -93, 1462)) < 5 then
+        fireproximityprompt(Island.PumpkinIsland.Summon1.Summon.SummonPrompt)
+      else GoTo(CFrame_new(-1180, -93, 1462)) end
       return true
     end
   end)},
@@ -394,6 +443,10 @@ local _Items = Tabs.Items do
   _Items:AddButton({"Reroll Aura Color [ 10 Gems ]", function()
     ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Reroll_Color", "Halfed Sorcerer")
   end})
+  _Items:AddSection("Bosses")
+  AddToggle(_Items, {"Auto Giant Pumpkin"}, "Giant Pumpkin")
+  AddToggle(_Items, {"Auto Evil Noob"}, "Evil Noob")
+  AddToggle(_Items, {"Auto Lord Sus"}, "Lord Sus")
   _Items:AddSection("Weapons")
   AddToggle(_Items, {"Auto Floppa [ Exclusive Sword ]"}, "_Floppa Sword")
   
