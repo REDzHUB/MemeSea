@@ -93,8 +93,8 @@ local Loaded, Funcs, Folders = {}, {}, {} do
     return ItemStorage:FindFirstChild(MName) and ItemStorage[MName].Value or 0
   end
   
-  Funcs.GetAbilityLvl = function(self, Ablt)
-    return Ability:FindFirstChild(Ablt) and Ability[Ablt].Value or 0
+  Funcs.AbilityUnlocked = function(self, Ablt)
+    return Ability:FindFirstChild(Ablt) and Ability[Ablt].Value
   end
   
   local _Quests = require(QuestSettings)
@@ -135,7 +135,7 @@ local function PlayerClick()
       VirtualUser:CaptureController()
       VirtualUser:Button1Down(Vector2.new(1e4, 1e4))
     end
-    if Settings.AutoHaki and Char:FindFirstChild("AuraColor_Folder") and Funcs:GetAbilityLvl("Aura") > 0 then
+    if Settings.AutoHaki and Char:FindFirstChild("AuraColor_Folder") and Funcs:AbilityUnlocked("Aura") then
       if #Char.AuraColor_Folder:GetChildren() < 1 then
         ReplicatedStorage.OtherEvent.MainEvents.Ability:InvokeServer("Aura")
       end
