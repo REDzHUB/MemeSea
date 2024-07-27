@@ -39,6 +39,25 @@ local Vector3_new = Vector3.new
 local _huge = math.huge
 
 local Loaded, Funcs, Folders = {}, {}, {} do
+  Loaded.Shop = {
+    {"Weapons", {
+      {"Buy Katana", "$5.000 Money", {"Weapon_Seller", "Doge"}},
+      {"Buy Hanger", "$25.000 Money", {"Weapon_Seller", "Hanger"}},
+      {"Buy Flame Katana", "1x Cheems Cola and $50.000", {"Weapon_Seller", "Cheems"}},
+      {"Buy Banana", "1x Cat Food and $350.000", {"Weapon_Seller", "Smiling Cat"}},
+      {"Buy Bonk", "5x Money Bags and $1.000.000", {"Weapon_Seller", "Meme Man"}},
+      {"Buy Pumpkin", "1x Nugget Man and $3.500.000", {"Weapon_Seller", "Gravestone"}}
+    }},
+    {"Ability", {
+      {"Buy Flash Step", "$100.000 Money", {"Ability_Teacher", "Giga Chad"}},
+      {"Buy Instict", "$2.500.000 Money", {"Ability_Teacher", "Nugget Man"}},
+      {"Buy Aura", "1x Meme Cube and $10.000.000", {"Ability_Teacher", "Aura Master"}}
+    }},
+    {"Fighting Style", {
+      {"Buy Combat", "$0 Money", {"FightingStyle_Teacher", "Maxwell"}},
+      {"Buy Baller", "10x Balls and $10.000.000", {"FightingStyle_Teacher", "Baller"}}
+    }}
+  }
   Loaded.WeaponsList = { "Fight", "Power", "Weapon" }
   Loaded.EnemeiesList = {}
   Loaded.EnemiesSpawns = {}
@@ -54,7 +73,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
     if Modules:FindFirstChild("CodeList") then
       local List = require(Modules.CodeList)
       for Code, Info in pairs(type(List) == "table" and List or {}) do
-        if type(Code) == "string" and type(Info) == "table" and Info.Status then RedeemCode(Code) end
+        if type(Code) == "string" and type(Info) == "table" and Info.Status then RedeemCode(Code)_wait(1) end
       end
     end
   end
@@ -376,6 +395,7 @@ local Tabs = {
   Items = Window:MakeTab({"Items", "Swords"}),
   Stats = Window:MakeTab({"Stats", "Signal"}),
   Teleport = Window:MakeTab({"Teleport", "Locate"}),
+  Shop = Window:MakeTab({"Shop", "ShoppingCart"}),
   Misc = Window:MakeTab({"Misc", "Settings"})
 }
 
@@ -476,7 +496,7 @@ local _Stats = Tabs.Stats do
           ReplicatedStorage.OtherEvent.MainEvents.StatsFunction:InvokeServer({
             ["Target"] = StatsName[_],
             ["Action"] = "UpgradeStats",
-            ["Amount"] = math.clamp(((Points<10 and 1) or (Points<100 and 5) or (Points<1000 and 20) or 50), 0, Points)
+            ["Amount"] = math.clamp(((Points<20 and 1) or (Points<100 and 5) or (Points<500 and 20) or 50), 0, Points)
           })
         end
       end
@@ -498,6 +518,22 @@ local _Teleport = Tabs.Teleport do
   _Teleport:AddDropdown({"Islands", Location:WaitForChild("QuestLocaion"):GetChildren(), {}, function(Value)
     GoTo(Location.QuestLocaion[Value].CFrame)
   end})
+end
+
+local _Shop = Tabs.Shop do
+  for _,s in next, Loaded.Shop do
+    _Shop:AddSection({s[1]})
+    for _,item in pairs(s[2]) do
+      local buyfunc = item[3]
+      if type(buyfunc) == "table" then
+        buyfunc = function()
+          ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer(unpack(item[3]))
+        end
+      end
+      
+      _Shop:AddButton({item[1], buyfunc, Desc = item[2]})
+    end
+  end
 end
 
 local _Misc = Tabs.Misc do
