@@ -469,12 +469,11 @@ local _Items = Tabs.Items do
   AddToggle(_Items, {"Auto Lord Sus"}, "Lord Sus")
   _Items:AddSection("Weapons")
   AddToggle(_Items, {"Auto Floppa [ Exclusive Sword ]"}, "_Floppa Sword")
-  
   --[[_Items:AddSection("Popcat")
   _Items:AddToggle({"Auto Popcat", false, function(Value)
     _env.AutoPopcat = Value
     while _env.AutoPopcat do _wait()
-      fireclickdetector(workspace.Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector)
+      fireclickdetector(Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector)
     end
   end, "AutoPopcat"})]]
 end
@@ -545,6 +544,7 @@ local _Misc = Tabs.Misc do
   _Misc:AddToggle({"Auto Aura", true, function(Value) Settings.AutoHaki = Value end, "Auto Haki"})
   _Misc:AddToggle({"Auto Attack", true, function(Value) Settings.AutoClick = Value end, "Auto Attack"})
   _Misc:AddToggle({"Bring Mobs", true, function(Value) Settings.BringMobs = Value end, "Bring Mobs"})
+  _Misc:AddToggle({"Anti AFK", true, function(Value) Settings.AntiAFK = Value end, "Anti AFK"})
   _Misc:AddSection("Team")
   _Misc:AddButton({"Join Cheems Team", function()
     ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Cheems Recruiter")
@@ -553,3 +553,16 @@ local _Misc = Tabs.Misc do
     ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Floppa Recruiter")
   end})
 end
+
+task.spawn(function()
+  if not _env.AntiAfk then
+    _env.AntiAfk = true
+    
+    while _wait(60*10) do
+      if Settings.AntiAFK then
+        VirtualUser:CaptureController()
+        VirtualUser:ClickButton2(Vector2.new())
+      end
+    end
+  end
+end)
