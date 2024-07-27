@@ -197,17 +197,16 @@ end
 
 local function BringMobsTo(_Enemie, CFrame, SBring)
   for _,v in ipairs(Monsters:GetChildren()) do
-    if (SBring or v.Name == _Enemie) and IsAlive(v) and v.PrimaryPart then
-      v.PrimaryPart.CFrame = CFrame
-      if v:FindFirstChild("Humanoid") then
-        local Hum = v.Humanoid
+    if (SBring or v.Name == _Enemie) and IsAlive(v) then
+      local PP, Hum = v.PrimaryPart, v.Humanoid
+      if PP and (PP.Position - CFrame.p).Magnitude < 500 then
         Hum.WalkSpeed = 0
         Hum:ChangeState(14)
+        PP.CFrame = CFrame
+        PP.CanCollide = false
+        PP.Transparency = Settings.ViewHitbox and 0.8 or 1
+        PP.Size = Vector3.new(50, 50, 50)
       end
-      local PP = v.PrimaryPart
-      PP.CanCollide = false
-      PP.Transparency = Settings.ViewHitbox and 0.8 or 1
-      PP.Size = Vector3.new(50, 50, 50)
     end
   end
   return pcall(sethiddenproperty, Player, "SimulationRadius", _huge)
