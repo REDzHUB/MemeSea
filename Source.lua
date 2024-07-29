@@ -1,3 +1,11 @@
+--[[
+  Dev: redz9999
+  Lib: redzLibV5
+  github: REDzHUB
+  
+  Game: Roblox-MemeSea
+]]
+
 local _wait = task.wait
 repeat _wait() until game:IsLoaded()
 local _env = getgenv and getgenv() or {}
@@ -10,6 +18,7 @@ local Player = Players.LocalPlayer
 
 local rs_Monsters = ReplicatedStorage:WaitForChild("MonsterSpawn")
 local Modules = ReplicatedStorage:WaitForChild("ModuleScript")
+local OtherEvent = ReplicatedStorage:WaitForChild("OtherEvent")
 local Monsters = workspace:WaitForChild("Monster")
 
 local QuestSettings = Modules:WaitForChild("Quest_Settings")
@@ -46,7 +55,8 @@ local Loaded, Funcs, Folders = {}, {}, {} do
       {"Buy Flame Katana", "1x Cheems Cola and $50.000", {"Weapon_Seller", "Cheems"}},
       {"Buy Banana", "1x Cat Food and $350.000", {"Weapon_Seller", "Smiling Cat"}},
       {"Buy Bonk", "5x Money Bags and $1.000.000", {"Weapon_Seller", "Meme Man"}},
-      {"Buy Pumpkin", "1x Nugget Man and $3.500.000", {"Weapon_Seller", "Gravestone"}}
+      {"Buy Pumpkin", "1x Nugget Man and $3.500.000", {"Weapon_Seller", "Gravestone"}},
+      {"Buy Popcat", "10.000 Pops Clicker", {"Weapon_Seller", "Ohio Popcat"}}
     }},
     {"Ability", {
       {"Buy Flash Step", "$100.000 Money", {"Ability_Teacher", "Giga Chad"}},
@@ -66,7 +76,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
   Loaded.Quests = {}
   
   local function RedeemCode(Code)
-    return ReplicatedStorage.OtherEvent.MainEvents.Code:InvokeServer(Code)
+    return OtherEvent.MainEvents.Code:InvokeServer(Code)
   end
   
   Funcs.RAllCodes = function(self)
@@ -84,7 +94,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
   
   Funcs.GetCurrentQuest = function(self)
     for _,Quest in pairs(Loaded.Quests) do
-      if Quest.Level <= self:GetPlayerLevel() and not Quest.RaidBoss then
+      if Quest.Level <= self:GetPlayerLevel() and not Quest.RaidBoss and not Quest.SpecialQuest then
         return Quest
       end
     end
@@ -119,14 +129,15 @@ local Loaded, Funcs, Folders = {}, {}, {} do
   
   local _Quests = require(QuestSettings)
   for Npc,Quest in pairs(_Quests) do
-    if not Quest.Special_Quest and QuestLocation:FindFirstChild(Npc) then
+    if QuestLocation:FindFirstChild(Npc) then
       table.insert(Loaded.Quests, {
         RaidBoss = Quest.Raid_Boss,
-        NpcName = Npc,
+        SpecialQuest = Quest.Special_Quest,
         QuestPos = QuestLocation[Npc].CFrame,
         EnemyPos = EnemyLocation[Quest.Target].CFrame,
         Level = Quest.LevelNeed,
-        Enemy = Quest.Target
+        Enemy = Quest.Target,
+        NpcName = Npc
       })
     end
   end
@@ -157,7 +168,7 @@ local function PlayerClick()
     end
     if Settings.AutoHaki and Char:FindFirstChild("AuraColor_Folder") and Funcs:AbilityUnlocked("Aura") then
       if #Char.AuraColor_Folder:GetChildren() < 1 then
-        ReplicatedStorage.OtherEvent.MainEvents.Ability:InvokeServer("Aura")
+        OtherEvent.MainEvents.Ability:InvokeServer("Aura")
       end
     end
   end
@@ -232,7 +243,7 @@ end
 local function ClearQuests(Ignore)
   for _,v in ipairs(QuestFolder:GetChildren()) do
     if v.QuestGiver.Value ~= Ignore and v.Target.Value ~= "None" then
-      ReplicatedStorage.OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = v.Name })
+      OtherEvent.QuestEvents.Quest:FireServer("Abandon_Quest", { QuestSlot = v.Name })
     end
   end
 end
@@ -329,6 +340,15 @@ _env.FarmFuncs = {
   {"Bring Fruits", (function()
     
   end)},
+  {"Race V2 Orb", (function()
+    if Funcs:GetPlayerLevel() >= 500 then
+      local Quest, Enemy = "Dancing Banana Quest", "Sogga"
+      if VerifyQuest(Quest) then
+        if KillMonster(Enemy) then else GoTo(EnemyLocation[Enemy].CFrame) end
+      else ClearQuests(Quest)TakeQuest(Quest, CFrame_new(-2620, -80, -2001)) end
+      return true
+    end
+  end)},
   {"Level Farm", (function()
     local Quest, QuestChecker = Funcs:GetCurrentQuest(), Funcs:CheckQuest()
     if Quest then
@@ -367,7 +387,7 @@ _env.FarmFuncs = {
     else ClearQuests(Quest)TakeQuest(Quest) end
     return true
   end)},
-  {"Nearest Farm", (function() return KillMonster(GetNextEnemie()) end) }
+  {"Nearest Farm", (function() return KillMonster(GetNextEnemie()) end)}
 }
 
 if not _env.LoadedFarm then
@@ -422,7 +442,7 @@ local _MainFarm = Tabs.MainFarm do
     Settings.ToolFarm = Value
   end, "Main/FarmTool"})
   _MainFarm:AddSection("Farm")
-  AddToggle(_MainFarm, {"Auto Farm Level"}, "Level Farm")
+  AddToggle(_MainFarm, {"Auto Farm Level", "MaxLevel: 2400"}, "Level Farm")
   AddToggle(_MainFarm, {"Auto Farm Nearest"}, "Nearest Farm")
   _MainFarm:AddSection("Enemies")
   _MainFarm:AddDropdown({"Select Enemie", Loaded.EnemeiesList, {Loaded.EnemeiesList[1]}, function(Value)
@@ -431,15 +451,15 @@ local _MainFarm = Tabs.MainFarm do
   AddToggle(_MainFarm, {"Auto Farm Selected"}, "FS Enemie")
   AddToggle(_MainFarm, {"Take Quest [ Enemie Selected ]", true}, "FS Take Quest")
   _MainFarm:AddSection("Boss Farm")
-  AddToggle(_MainFarm, {"Auto Meme Beast"}, "Meme Beast")
+  AddToggle(_MainFarm, {"Auto Meme Beast [ Spawns every 30 Minutes ]", "Drops: Portal ( <25% ), Meme Cube ( <50% )"}, "Meme Beast")
   _MainFarm:AddSection("Raid")
-  AddToggle(_MainFarm, {"Auto Farm Raid"}, "Raid Farm")
+  AddToggle(_MainFarm, {"Auto Farm Raid", "Req: Level 1000"}, "Raid Farm")
 end
 
 local _Items = Tabs.Items do
   _Items:AddSection("Powers")
   _Items:AddButton({"Reroll Powers 10X [ 250k Money ]", function()
-    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Random_Power", {
+    OtherEvent.MainEvents.Modules:FireServer("Random_Power", {
       Type = "Decuple",
       NPCName = "Floppa Gacha",
       GachaType = "Money"
@@ -453,7 +473,7 @@ local _Items = Tabs.Items do
         for _,v in ipairs(Backpack:GetChildren()) do
           if v:IsA("Tool") and v.ToolTip == "Power" and v:GetAttribute("Using") == nil then
             v.Parent = Player.Character
-            ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", { Action = "Store", Tool = v })
+            OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", { Action = "Store", Tool = v })
           end
         end
       end
@@ -461,12 +481,14 @@ local _Items = Tabs.Items do
   end, "AutoStore"})
   _Items:AddSection("Aura Color")
   _Items:AddButton({"Reroll Aura Color [ 10 Gems ]", function()
-    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Reroll_Color", "Halfed Sorcerer")
+    OtherEvent.MainEvents.Modules:FireServer("Reroll_Color", "Halfed Sorcerer")
   end})
   _Items:AddSection("Bosses")
-  AddToggle(_Items, {"Auto Giant Pumpkin"}, "Giant Pumpkin")
-  AddToggle(_Items, {"Auto Evil Noob"}, "Evil Noob")
-  AddToggle(_Items, {"Auto Lord Sus"}, "Lord Sus")
+  AddToggle(_Items, {"Auto Giant Pumpkin", "Drops: Pumpkin Head ( <10% ), Nugget Man ( <25% )"}, "Giant Pumpkin")
+  AddToggle(_Items, {"Auto Evil Noob", "Drops: Yellow Blade ( <5% ), Noob Friend ( <10% )"}, "Evil Noob")
+  AddToggle(_Items, {"Auto Lord Sus", "Drops: Purple Sword ( <5% ), Sus Pals ( <10% )"}, "Lord Sus")
+  _Items:AddSection("Race")
+  AddToggle(_Items, {"Auto Awakening Orb", "Req: Level 500"}, "Race V2 Orb")
   _Items:AddSection("Weapons")
   AddToggle(_Items, {"Auto Floppa [ Exclusive Sword ]"}, "_Floppa Sword")
   --[[_Items:AddSection("Popcat")
@@ -481,7 +503,7 @@ end
 local _Stats = Tabs.Stats do
   local StatsName, SelectedStats = {
     ["Power"] = "MemePowerLevel", ["Health"] = "DefenseLevel",
-    ["Weapon"] = "SwordLevel", ["Melee"] = "Melee Level"
+    ["Weapon"] = "SwordLevel", ["Melee"] = "MeleeLevel"
   }, {}
   
   _Stats:AddToggle({"Auto Stats", false, function(Value)
@@ -491,7 +513,7 @@ local _Stats = Tabs.Stats do
       for _,v in pairs(SelectedStats) do
         local Points = SkillPoint.Value
         if v and Points > 0 then
-          ReplicatedStorage.OtherEvent.MainEvents.StatsFunction:InvokeServer({
+          OtherEvent.MainEvents.StatsFunction:InvokeServer({
             ["Target"] = StatsName[_],
             ["Action"] = "UpgradeStats",
             ["Amount"] = math.clamp(((Points<20 and 1) or (Points<100 and 5) or (Points<500 and 20) or 50), 0, Points)
@@ -513,7 +535,7 @@ local _Teleport = Tabs.Teleport do
   _Teleport:AddDropdown({"Islands", Location:WaitForChild("SpawnLocations"):GetChildren(), {}, function(Value)
     GoTo(Location.SpawnLocations[Value].CFrame)
   end})
-  _Teleport:AddDropdown({"Islands", Location:WaitForChild("QuestLocaion"):GetChildren(), {}, function(Value)
+  _Teleport:AddDropdown({"Quests", Location:WaitForChild("QuestLocaion"):GetChildren(), {}, function(Value)
     GoTo(Location.QuestLocaion[Value].CFrame)
   end})
 end
@@ -525,7 +547,7 @@ local _Shop = Tabs.Shop do
       local buyfunc = item[3]
       if type(buyfunc) == "table" then
         buyfunc = function()
-          ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer(unpack(item[3]))
+          OtherEvent.MainEvents.Modules:FireServer(unpack(item[3]))
         end
       end
       
@@ -541,16 +563,16 @@ local _Misc = Tabs.Misc do
     Settings.FarmDistance = Value or 8
     Settings.FarmCFrame = CFrame_new(0, Value or 8, 0) * CFrame_Angles(math.rad(-90), 0, 0)
   end, "Farm Distance"})
-  _Misc:AddToggle({"Auto Aura", true, function(Value) Settings.AutoHaki = Value end, "Auto Haki"})
-  _Misc:AddToggle({"Auto Attack", true, function(Value) Settings.AutoClick = Value end, "Auto Attack"})
-  _Misc:AddToggle({"Bring Mobs", true, function(Value) Settings.BringMobs = Value end, "Bring Mobs"})
-  _Misc:AddToggle({"Anti AFK", true, function(Value) Settings.AntiAFK = Value end, "Anti AFK"})
+  _Misc:AddToggle({"Auto Aura", Settings.AutoHaki, function(Value) Settings.AutoHaki = Value end, "Auto Haki"})
+  _Misc:AddToggle({"Auto Attack", Settings.AutoClick, function(Value) Settings.AutoClick = Value end, "Auto Attack"})
+  _Misc:AddToggle({"Bring Mobs", Settings.BringMobs, function(Value) Settings.BringMobs = Value end, "Bring Mobs"})
+  _Misc:AddToggle({"Anti AFK", Settings.AntiAFK, function(Value) Settings.AntiAFK = Value end, "Anti AFK"})
   _Misc:AddSection("Team")
   _Misc:AddButton({"Join Cheems Team", function()
-    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Cheems Recruiter")
+    OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Cheems Recruiter")
   end})
   _Misc:AddButton({"Join Floppa Team", function()
-    ReplicatedStorage.OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Floppa Recruiter")
+    OtherEvent.MainEvents.Modules:FireServer("Change_Team", "Floppa Recruiter")
   end})
 end
 
