@@ -21,7 +21,8 @@ local Modules = ReplicatedStorage:WaitForChild("ModuleScript")
 local OtherEvent = ReplicatedStorage:WaitForChild("OtherEvent")
 local Monsters = workspace:WaitForChild("Monster")
 
-local QuestSettings = Modules:WaitForChild("Quest_Settings")
+local MQuestSettings = require(Modules:WaitForChild("Quest_Settings"))
+local MSetting = require(Modules:WaitForChild("Setting"))
 
 local NPCs = workspace:WaitForChild("NPCs")
 local Raids = workspace:WaitForChild("Raids")
@@ -127,8 +128,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
     return Ability:FindFirstChild(Ablt) and Ability[Ablt].Value
   end
   
-  local _Quests = require(QuestSettings)
-  for Npc,Quest in pairs(_Quests) do
+  for Npc,Quest in pairs(MQuestSettings) do
     if QuestLocation:FindFirstChild(Npc) then
       table.insert(Loaded.Quests, {
         RaidBoss = Quest.Raid_Boss,
@@ -149,6 +149,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
 end
 
 local Settings = Settings or {} do
+  Settings.AutoStats_Points = 1
   Settings.BringMobs = true
   Settings.FarmDistance = 9
   Settings.ViewHitbox = false
@@ -442,7 +443,7 @@ local _MainFarm = Tabs.MainFarm do
     Settings.ToolFarm = Value
   end, "Main/FarmTool"})
   _MainFarm:AddSection("Farm")
-  AddToggle(_MainFarm, {"Auto Farm Level", "MaxLevel: 2400"}, "Level Farm")
+  AddToggle(_MainFarm, {"Auto Farm Level", ("MaxLevel: %i"):format(MSetting.Setting.MaxLevel)}, "Level Farm")
   AddToggle(_MainFarm, {"Auto Farm Nearest"}, "Nearest Farm")
   _MainFarm:AddSection("Enemies")
   _MainFarm:AddDropdown({"Select Enemie", Loaded.EnemeiesList, {Loaded.EnemeiesList[1]}, function(Value)
@@ -506,17 +507,20 @@ local _Stats = Tabs.Stats do
     ["Weapon"] = "SwordLevel", ["Melee"] = "MeleeLevel"
   }, {}
   
+  _Stats:AddSlider({"Select Points", 1, 100, 1, 1, function(Value)
+    Settings.AutoStats_Points = Value
+  end, "Stats/SelectPoints"})
   _Stats:AddToggle({"Auto Stats", false, function(Value)
     _env.AutoStats = Value
-    local SkillPoint = PlayerData.SkillPoint
+    local _Points = PlayerData.SkillPoint
     while _env.AutoStats do _wait(0.5)
-      for _,v in pairs(SelectedStats) do
-        local Points = SkillPoint.Value
-        if v and Points > 0 then
+      for _,Stats in pairs(SelectedStats) do
+        local _p, _s = _Points.Value, PlayerData[StatsName[_]]
+        if Stats and _p > 0 and _s.Value < MSetting.Setting.MaxLevel then
           OtherEvent.MainEvents.StatsFunction:InvokeServer({
             ["Target"] = StatsName[_],
             ["Action"] = "UpgradeStats",
-            ["Amount"] = math.clamp(((Points<20 and 1) or (Points<100 and 5) or (Points<500 and 20) or 50), 0, Points)
+            ["Amount"] = math.clamp(Settings.AutoStats_Points, 0, MSetting.Setting.MaxLevel - _s.Value)
           })
         end
       end
