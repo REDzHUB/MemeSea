@@ -49,6 +49,21 @@ local Vector3_new = Vector3.new
 
 local _huge = math.huge
 
+task.spawn(function()
+  if not _env.LoadedHideUsername then
+    _env.LoadedHideUsername = true
+    local Label = Player.PlayerGui.MainGui.PlayerName
+    
+    local function Update()
+      local Level = PlayerLevel.Value
+      local IsMax = Level >= MSetting.Setting.MaxLevel
+      Label.Text = ("%s • Lv. %i%s"):format("Anonymous", Level, IsMax and " (Max)" or "")
+    end
+    
+    Label:GetPropertyChangedSignal("Text"):Connect(Update)Update()
+  end
+end)
+
 local Loaded, Funcs, Folders = {}, {}, {} do
   Loaded.ItemsPrice = {
     Aura = function()
