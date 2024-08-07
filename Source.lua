@@ -362,9 +362,6 @@ _env.FarmFuncs = {
       return true
     end
   end)},
-  {"Bring Fruits", (function()
-    
-  end)},
   {"Race V2 Orb", (function()
     if Funcs:GetPlayerLevel() >= 500 then
       local Quest, Enemy = "Dancing Banana Quest", "Sogga"
@@ -517,29 +514,17 @@ local _Items = Tabs.Items do
   AddToggle(_Items, {"Auto Awakening Orb", "Req: Level 500"}, "Race V2 Orb")
   _Items:AddSection("Weapons")
   AddToggle(_Items, {"Auto Floppa [ Exclusive Sword ]"}, "_Floppa Sword")
-  _Items:AddSection("Ability")
-  _Items:AddToggle({"Auto Buy Abilities", false, function(Value)
-    _env.AutoBuyAbility = Value
-    while _env.AutoBuyAbility do  _wait(1)
-      if not Funcs:AbilityUnlocked("Instinct") and Funcs:CanBuy("Instinct") then
-        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Nugget Man")
-      elseif not Funcs:AbilityUnlocked("FlashStep") and Funcs:CanBuy("FlashStep") then
-        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Giga Chad")
-      elseif not Funcs:AbilityUnlocked("Aura") and Funcs:CanBuy("Aura") then
-        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Aura Master")
-      else wait(3) end
-    end
-  end, "Auto Buy Ability"})
   _Items:AddSection("Popcat")
   _Items:AddToggle({"Auto Popcat", false, function(Value)
     _env.AutoPopcat = Value
     local ClickDetector = Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector
-    while _env.AutoPopcat do _wait()
-      for i = 1, 75 do
-        fireclickdetector(ClickDetector)
-      end
+    local Heartbeat = RunService.Heartbeat
+    if Value then GoTo(CFrame_new(400, -37, -588)) end
+    
+    while _env.AutoPopcat do Heartbeat:Wait()
+      fireclickdetector(ClickDetector)
     end
-  end, "AutoPopcat", Desc = "Aura, Instinct & Flash Step"})
+  end, "AutoPopcat"})
 end
 
 local _Stats = Tabs.Stats do
@@ -586,6 +571,20 @@ local _Teleport = Tabs.Teleport do
 end
 
 local _Shop = Tabs.Shop do
+  _Shop:AddSection("Auto Buy")
+  _Shop:AddToggle({"Auto Buy Abilities", false, function(Value)
+    _env.AutoBuyAbility = Value
+    while _env.AutoBuyAbility do  _wait(1)
+      if not Funcs:AbilityUnlocked("Instinct") and Funcs:CanBuy("Instinct") then
+        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Nugget Man")
+      elseif not Funcs:AbilityUnlocked("FlashStep") and Funcs:CanBuy("FlashStep") then
+        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Giga Chad")
+      elseif not Funcs:AbilityUnlocked("Aura") and Funcs:CanBuy("Aura") then
+        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Aura Master")
+      else wait(3) end
+    end
+  end, "Auto Buy Ability", Desc = "Aura, Instinct & Flash Step"})
+  
   for _,s in next, Loaded.Shop do
     _Shop:AddSection({s[1]})
     for _,item in pairs(s[2]) do
