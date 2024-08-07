@@ -12,6 +12,7 @@ local _env = getgenv and getgenv() or {}
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local VirtualUser = game:GetService("VirtualUser")
+local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local Player = Players.LocalPlayer
@@ -49,6 +50,17 @@ local Vector3_new = Vector3.new
 local _huge = math.huge
 
 local Loaded, Funcs, Folders = {}, {}, {} do
+  Loaded.ItemsPrice = {
+    Aura = function()
+      return Funcs:GetMaterial("Meme Cube") > 0 and Funcs:GetData("Money") >= 10000000 -- 1x Meme Cube, $10.000.000
+    end,
+    FlashStep = function()
+      return Funcs:GetData("Money") >= 100000 -- $100.000
+    end,
+    Instinct = function()
+      return Funcs:GetData("Money") >= 2500000 -- $2.500.000
+    end
+  }
   Loaded.Shop = {
     {"Weapons", {
       {"Buy Katana", "$5.000 Money", {"Weapon_Seller", "Doge"}},
@@ -61,7 +73,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
     }},
     {"Ability", {
       {"Buy Flash Step", "$100.000 Money", {"Ability_Teacher", "Giga Chad"}},
-      {"Buy Instict", "$2.500.000 Money", {"Ability_Teacher", "Nugget Man"}},
+      {"Buy Instinct", "$2.500.000 Money", {"Ability_Teacher", "Nugget Man"}},
       {"Buy Aura", "1x Meme Cube and $10.000.000", {"Ability_Teacher", "Aura Master"}}
     }},
     {"Fighting Style", {
@@ -84,7 +96,7 @@ local Loaded, Funcs, Folders = {}, {}, {} do
     if Modules:FindFirstChild("CodeList") then
       local List = require(Modules.CodeList)
       for Code, Info in pairs(type(List) == "table" and List or {}) do
-        if type(Code) == "string" and type(Info) == "table" and Info.Status then RedeemCode(Code)_wait(1) end
+        if type(Code) == "string" and type(Info) == "table" and Info.Status then RedeemCode(Code) end
       end
     end
   end
@@ -126,6 +138,17 @@ local Loaded, Funcs, Folders = {}, {}, {} do
   
   Funcs.AbilityUnlocked = function(self, Ablt)
     return Ability:FindFirstChild(Ablt) and Ability[Ablt].Value
+  end
+  
+  Funcs.CanBuy = function(self, Item)
+    if Loaded.ItemsPrice[Item] then
+      return Loaded.ItemsPrice[Item]()
+    end
+    return false
+  end
+  
+  Funcs.GetData = function(self, Data)
+    return PlayerData:FindFirstChild(Data) and PlayerData[Data].Value or 0
   end
   
   for Npc,Quest in pairs(MQuestSettings) do
@@ -225,10 +248,11 @@ local function BringMobsTo(_Enemie, CFrame, SBring)
 end
 
 local function KillMonster(_Enemie, SBring)
-  local Enemie = typeof(_Enemie) == "Instance" and _Enemie or GetNextEnemie(_Enemie)
-  if IsAlive(Enemie) and Enemie.PrimaryPart then
-    GoTo(Enemie.PrimaryPart.CFrame * Settings.FarmCFrame)EquipWeapon()PlayerClick()
-    if Settings.BringMobs then BringMobsTo(_Enemie, Enemie.PrimaryPart.CFrame, SBring) end
+  local Enemy = typeof(_Enemie) == "Instance" and _Enemie or GetNextEnemie(_Enemie)
+  if IsAlive(Enemy) and Enemy.PrimaryPart then
+    GoTo(Enemy.PrimaryPart.CFrame * Settings.FarmCFrame)EquipWeapon()
+    if not Enemy:FindFirstChild("Reverse_Mark") then PlayerClick() end
+    if Settings.BringMobs then BringMobsTo(_Enemie, Enemy.PrimaryPart.CFrame, SBring) end
     return true
   end
 end
@@ -368,14 +392,18 @@ _env.FarmFuncs = {
     if Funcs:GetPlayerLevel() >= 1000 then
       local RaidMap = GetRaidMap()
       if RaidMap then
-        local Enemie = GetRaidEnemies()
-        if Enemie then KillMonster(Enemie, true) else
-          local Spawn = RaidMap:FindFirstChild("Spawn_Location")
-          if Spawn then GoTo(Spawn.CFrame) end
+        if RaidMap:GetAttribute("Starting") ~= 0 then
+          OtherEvent.MiscEvents.StartRaid:FireServer("Start")_wait(1)
+        else
+          local Enemie = GetRaidEnemies()
+          if Enemie then KillMonster(Enemie, true) else
+            local Spawn = RaidMap:FindFirstChild("Spawn_Location")
+            if Spawn then GoTo(Spawn.CFrame) end
+          end
         end
       else
         local Raid = Region:FindFirstChild("RaidArea")
-        if Raid then GoTo(Raid.CFrame, true) end
+        if Raid then GoTo(CFrame_new(Raid.Position)) end
       end
       return true
     end
@@ -469,13 +497,10 @@ local _Items = Tabs.Items do
   _Items:AddToggle({"Auto Store Powers", false, function(Value)
     _env.AutoStorePowers = Value
     while _env.AutoStorePowers do _wait()
-      local Backpack = Player:FindFirstChild("Backpack")
-      if Backpack then
-        for _,v in ipairs(Backpack:GetChildren()) do
-          if v:IsA("Tool") and v.ToolTip == "Power" and v:GetAttribute("Using") == nil then
-            v.Parent = Player.Character
-            OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", { Action = "Store", Tool = v })
-          end
+      for _,v in ipairs(Player.Backpack:GetChildren()) do
+        if v:IsA("Tool") and v.ToolTip == "Power" and v:GetAttribute("Using") == nil then
+          v.Parent = Player.Character
+          OtherEvent.MainEvents.Modules:FireServer("Eatable_Power", { Action = "Store", Tool = v })
         end
       end
     end
@@ -492,13 +517,29 @@ local _Items = Tabs.Items do
   AddToggle(_Items, {"Auto Awakening Orb", "Req: Level 500"}, "Race V2 Orb")
   _Items:AddSection("Weapons")
   AddToggle(_Items, {"Auto Floppa [ Exclusive Sword ]"}, "_Floppa Sword")
-  --[[_Items:AddSection("Popcat")
+  _Items:AddSection("Ability")
+  _Items:AddToggle({"Auto Buy Abilities", false, function(Value)
+    _env.AutoBuyAbility = Value
+    while _env.AutoBuyAbility do  _wait(1)
+      if not Funcs:AbilityUnlocked("Instinct") and Funcs:CanBuy("Instinct") then
+        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Nugget Man")
+      elseif not Funcs:AbilityUnlocked("FlashStep") and Funcs:CanBuy("FlashStep") then
+        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Giga Chad")
+      elseif not Funcs:AbilityUnlocked("Aura") and Funcs:CanBuy("Aura") then
+        OtherEvent.MainEvents.Modules:FireServer("Ability_Teacher", "Aura Master")
+      else wait(3) end
+    end
+  end, "Auto Buy Ability"})
+  _Items:AddSection("Popcat")
   _Items:AddToggle({"Auto Popcat", false, function(Value)
     _env.AutoPopcat = Value
+    local ClickDetector = Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector
     while _env.AutoPopcat do _wait()
-      fireclickdetector(Island.FloppaIsland.Popcat_Clickable.Part.ClickDetector)
+      for i = 1, 75 do
+        fireclickdetector(ClickDetector)
+      end
     end
-  end, "AutoPopcat"})]]
+  end, "AutoPopcat", Desc = "Aura, Instinct & Flash Step"})
 end
 
 local _Stats = Tabs.Stats do
@@ -507,7 +548,7 @@ local _Stats = Tabs.Stats do
     ["Weapon"] = "SwordLevel", ["Melee"] = "MeleeLevel"
   }, {}
   
-  _Stats:AddSlider({"Select Points", 1, 100, 1, 1, function(Value)
+  _Stats:AddSlider({"Select Points", 1, 100, Settings.AutoStats_Points, 1, function(Value)
     Settings.AutoStats_Points = Value
   end, "Stats/SelectPoints"})
   _Stats:AddToggle({"Auto Stats", false, function(Value)
