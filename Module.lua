@@ -1,6 +1,7 @@
 local Settings = ...
 
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local VIM = game:GetService("VirtualInputManager")
 local VirtualUser = game:GetService("VirtualUser")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -25,6 +26,7 @@ local Quests_Npc = NPCs:WaitForChild("Quests_Npc")
 local EnemyLocation = Location:WaitForChild("Enemy_Location")
 local QuestLocation = Location:WaitForChild("QuestLocaion")
 
+local Cooldown = Player:WaitForChild("Cooldown")
 local Items = Player:WaitForChild("Items")
 local QuestFolder = Player:WaitForChild("QuestFolder")
 local Ability = Player:WaitForChild("Ability")
@@ -184,9 +186,27 @@ local Module = {} do
     return Ability:FindFirstChild(Ablt) and Ability[Ablt].Value
   end
   
+  function Module:CanUseSkill(key)
+    for _,v in ipairs(Cooldown:GetChildren()) do
+      if v.Name:find("_" .. key) then
+        return false
+      end
+    end
+    return true
+  end
+  
+  function Module:UseSkills()
+    for key, Value in pairs(Settings.SkillsSelected) do
+      if Value and self:CanUseSkill(key) then
+        VIM:SendKeyEvent(true, key, false, game)
+        VIM:SendKeyEvent(false, key, false, game)
+      end
+    end
+  end
+  
   _spawn(function()
-    if _env.LoadedHUN then return end
-    _env.LoadedHUN = true
+    if _env.Loaded_HUN then return end
+    _env.Loaded_HUN = true
     
     local Label = Player.PlayerGui.MainGui.PlayerName
     
