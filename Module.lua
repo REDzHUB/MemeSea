@@ -34,6 +34,7 @@ local PlayerData = Player:WaitForChild("PlayerData")
 local PlayerLevel = PlayerData:WaitForChild("Level")
 
 local sethiddenproperty = sethiddenproperty or (function()end)
+local _env = getgenv and getgenv() or {}
 
 local _insert = table.insert
 local _spawn = task.spawn
