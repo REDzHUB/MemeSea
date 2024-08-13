@@ -266,6 +266,15 @@ local Module = {} do
       return Unlocked
     end
     
+    function Items:CanRerollAura()
+      for _,Color in ipairs(self.Folders.AuraColor:GetChildren()) do
+        if not Color.Value then
+          return true
+        end
+      end
+      return false
+    end
+    
     for _,Folder in ipairs(Items.Inventory:GetChildren()) do
       Items.Folders[Folder.Name] = Folder
     end
