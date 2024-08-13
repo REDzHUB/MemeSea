@@ -237,6 +237,10 @@ local Module = {} do
       return self.Folders.Accessory[AcName].Value > 0
     end
     
+    function Items:VerifyFightStyle(FsName)
+      return self.Folders.FightingStyle[FsName].Value = true
+    end
+    
     for _,Folder in ipairs(Items.Inventory:GetChildren()) do
       Items.Folders[Folder.Name] = Folder
     end
