@@ -238,6 +238,8 @@ local Module = {} do
     local Items = {}
     Items.Inventory = Player:WaitForChild("Items")
     Items.Folders = {}
+    Items.Acessories = {"Nah, I'd Win.", "Sus Pals", "Noob Friend", "Pumpkin Head", "Moai Face", "Egg Doge", "Floppa Hat"}
+    Items.Swords = {"Popcat", "Pumpkin", "Yellow Blade", "Floppa", "Purple Sword", "Portal", "Katana"}
     
     function Items:GetMaterial(MaName)
       return self.Folders.ItemStorage[MaName].Value
@@ -273,6 +275,30 @@ local Module = {} do
         end
       end
       return false
+    end
+    
+    function Items:EquipSword()
+      local Swords = self.Folders.Weapon
+      for _,Sword in ipairs(self.Swords) do
+        if Swords[Sword].Value > 0 then
+          if PlayerData.SwordEquip.Value ~= Sword then
+            OtherEvent.ItemEvents.UpdateInventory:InvokeServer("Weapon", { SelectedItem = Sword })
+          end
+          return
+        end
+      end
+    end
+    
+    function Items:EquipAcessory()
+      local Accessories = self.Folders.Accessory
+      for _,Acessory in ipairs(self.Acessories) do
+        if Accessories[Acessory].Value > 0 then
+          if PlayerData.AccessoryEquip.Value ~= Acessory then
+            OtherEvent.ItemEvents.UpdateInventory:InvokeServer("Accessory", { SelectedItem = Acessory })
+          end
+          return
+        end
+      end
     end
     
     for _,Folder in ipairs(Items.Inventory:GetChildren()) do
