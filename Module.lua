@@ -214,7 +214,7 @@ local Module = {} do
   
   _spawn(function()
     for _,Pass in ipairs(require(Modules.Gamepass_Assets)) do
-      PassesId[Pass.Asset_Name] = Pass.GamepassId
+      Module.PassesId[Pass.Asset_Name] = Pass.GamepassId
     end
   end)
   
