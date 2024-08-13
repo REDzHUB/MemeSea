@@ -238,7 +238,7 @@ local Module = {} do
     end
     
     function Items:VerifyFightStyle(FsName)
-      return self.Folders.FightingStyle[FsName].Value = true
+      return self.Folders.FightingStyle[FsName].Value == true
     end
     
     function Items:GetUnlocked()
