@@ -72,6 +72,7 @@ local Module = {} do
     }}
   }
   Module.ItemsPrice = {
+    ["Quest Scroll"] = { Money = 1000000 },
     ["Aura"] = { Material = {"Meme Cube", 1}, Money = 10000000 },
     ["Instinct"] = { Money = 2500000 },
     ["FlashStep"] = { Money = 100000 },
