@@ -241,6 +241,17 @@ local Module = {} do
       return self.Folders.FightingStyle[FsName].Value = true
     end
     
+    function Items:GetUnlocked()
+      local Unlocked = {}
+      for _,v in (self.Folders.Weapon:GetChildren()) do
+        Unlocked[v.Name] = v.Value > 0 or false
+      end
+      for _,v in (self.Folders.Accessory:GetChildren()) do
+        Unlocked[v.Name] = v.Value > 0 or false
+      end
+      return Unlocked
+    end
+    
     for _,Folder in ipairs(Items.Inventory:GetChildren()) do
       Items.Folders[Folder.Name] = Folder
     end
