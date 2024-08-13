@@ -160,7 +160,7 @@ local Module = {} do
   
   function Module:GetRaidEnemy()
     for _,Enemy in ipairs(Monsters:GetChildren()) do
-      if Enemy:GetAttribute("Raid_Enemy") and self:IsAlive(v) then
+      if Enemy:GetAttribute("Raid_Enemy") and self:IsAlive(Enemy) then
         return Enemy
       end
     end
