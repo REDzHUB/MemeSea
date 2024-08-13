@@ -26,6 +26,7 @@ local Quests_Npc = NPCs:WaitForChild("Quests_Npc")
 local EnemyLocation = Location:WaitForChild("Enemy_Location")
 local QuestLocation = Location:WaitForChild("QuestLocaion")
 
+local Gamepass = Player:WaitForChild("PlayerSpecial")
 local Cooldown = Player:WaitForChild("Cooldown")
 local Items = Player:WaitForChild("Items")
 local QuestFolder = Player:WaitForChild("QuestFolder")
@@ -45,7 +46,9 @@ local Module = {} do
   Module.__index = Module
   
   Module.MaxLevel = MSetting.Setting.MaxLevel
+  Module.PassesPrice = MSetting.Setting.Gamepasses_Cost
   Module.BL_Spawns = MSetting.Setting.IgnoreSpawnPoints
+  Module.PassesId = {}
   
   Module.WeaponList = {"Fight", "Power", "Weapon"}
   Module.Shop = {
@@ -204,6 +207,16 @@ local Module = {} do
       end
     end
   end
+  
+  function Module:UnlockedGamepass(GaName)
+    return Gamepass[GaName].Value
+  end
+  
+  _spawn(function()
+    for _,Pass in ipairs(require(Modules.Gamepass_Assets)) do
+      PassesId[Pass.Asset_Name] = Pass.GamepassId
+    end
+  end)
   
   _spawn(function()
     if _env.Loaded_HUN then return end
