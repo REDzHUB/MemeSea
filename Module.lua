@@ -16,6 +16,7 @@ local Monsters = workspace:WaitForChild("Monster")
 local MQuestSettings = require(Modules:WaitForChild("Quest_Settings"))
 local MSetting = require(Modules:WaitForChild("Setting"))
 
+local Characters = workspace:WaitForChild("Character")
 local NPCs = workspace:WaitForChild("NPCs")
 local Raids = workspace:WaitForChild("Raids")
 local Location = workspace:WaitForChild("Location")
@@ -41,6 +42,8 @@ local _insert = table.insert
 local _spawn = task.spawn
 local _wait = task.wait
 local _huge = math.huge
+
+local Skill_DB = {}
 
 local Module = {} do
   Module.__index = Module
@@ -151,8 +154,7 @@ local Module = {} do
           Hum:ChangeState(14)
           PP.CFrame = CFrame
           PP.CanCollide = false
-          PP.Transparency = Settings.ViewHitbox and 0.8 or 1
-          PP.Size = Vector3.new(50, 50, 50)
+          PP.Size = Vector3.new(40, 40, 40)
         end
       end
     end
@@ -180,7 +182,7 @@ local Module = {} do
     local PP = Enemy.PrimaryPart
     
     if PP then
-      self:GoTo(PP.CFrame * Settings.FarmCFrame)self:EquipWeapon()
+      self:GoTo(PP.CFrame * Settings.FarmCFrame)self:EquipWeapon()self:UseSkills()
       if not Enemy:FindFirstChild("Reverse_Mark") then self:PlayerClick() end
       if Settings.BringMobs then self:BringMobsTo(EnName, PP.CFrame, ...) end
       return true
@@ -201,16 +203,33 @@ local Module = {} do
   end
   
   function Module:UseSkills()
-    for key, Value in pairs(Settings.SkillsSelected) do
-      if Value and self:CanUseSkill(key) then
-        VIM:SendKeyEvent(true, key, false, game)
-        VIM:SendKeyEvent(false, key, false, game)
+    if _env.AutoSkill then
+      for key, Value in pairs(Settings.SkillsSelected) do
+        if Value and not Skill_DB[key] and self:CanUseSkill(key) then
+          VIM:SendKeyEvent(true, key, false, game)
+          VIM:SendKeyEvent(false, key, false, game)
+          _spawn(function() Skill_DB[key] = true; _wait(0.5); Skill_DB[key] = false; end)
+        end
       end
     end
   end
   
   function Module:UnlockedGamepass(GaName)
     return Gamepass[GaName].Value
+  end
+  
+  function Module:GetNearestList(Distance)
+    local List = {}
+    for _,plr in ipairs(Players:GetPlayers()) do
+      local Char = plr.Character
+      if plr ~= Player and self:IsAlive(Char) then
+        local PP = Char.PrimaryPart
+        if PP and Player:DistanceFromCharacter(PP.Position) <= Distance then
+          _insert(List, Char)
+        end
+      end
+    end
+    return List
   end
   
   _spawn(function()
@@ -234,12 +253,63 @@ local Module = {} do
     Label:GetPropertyChangedSignal("Text"):Connect(Update)Update()
   end)
   
+  _spawn(function()
+    if _env.Loaded_AimBot then return end
+    _env.Loaded_AimBot = true
+    
+    local old;
+    old = hookmetamethod(game, "__namecall", function(self, ...)
+      local Method = getnamecallmethod():lower()
+      if Method == "fireserver" then
+        local Remote = self.Name
+        if Remote == "Server_Skills" and Module.AimBot then
+          return Module:AimBot(old, self, ...)
+        end
+      end
+      return old(self, ...)
+    end)
+  end)
+  
+  _spawn(function()
+    if _env.Loaded_NPrf then return end
+    _env.Loaded_NPrf = true
+    
+    RunService.Stepped:Connect(function()
+      local Distance, Nearest = 1000, false;
+      if _env.AimBotPlayers then
+        for _,Char in ipairs(Characters:GetChildren()) do
+          local PP = Char.PrimaryPart
+          if Char ~= Player.Character and PP and Player:DistanceFromCharacter(PP.Position) < Distance then
+            Distance, Nearest = Player:DistanceFromCharacter(PP.Position), PP
+          end
+        end
+      end
+      _env.NearestPlayer = Nearest
+    end)
+  end)
+  
+  _spawn(function()
+    if _env.Loaded_NoStun then return end
+    _env.Loaded_NoStun = true
+    
+    local UpdateStun = function(Char)
+      Char:WaitForChild("Stun"):GetPropertyChangedSignal("Value"):Connect(function()
+        if _env.NoStun then
+          Char.Stun.Value = 0
+        end
+      end)
+    end
+    
+    Player.CharacterAdded:Connect(UpdateStun)
+    UpdateStun(Player.Character)
+  end)
+  
   Module.Items = (function()
     local Items = {}
     Items.Inventory = Player:WaitForChild("Items")
     Items.Folders = {}
     Items.Acessories = {"Nah, I'd Win.", "Sus Pals", "Noob Friend", "Pumpkin Head", "Moai Face", "Egg Doge", "Floppa Hat"}
-    Items.Swords = {"Popcat", "Pumpkin", "Yellow Blade", "Floppa", "Purple Sword", "Portal", "Katana"}
+    Items.Swords = {"Purple Katana", "Yellow Blade", "Popcat", "Pumpkin", "Floppa", "Portal", "Katana"}
     
     function Items:GetMaterial(MaName)
       return self.Folders.ItemStorage[MaName].Value
